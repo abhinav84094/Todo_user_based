@@ -4,14 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
 </head>
 <body>
     <div>
         <label>Enter Your Task : </label>
-        <input type="text" style="height: 20px; width: 200px; padding:5px; margin: 20px;" />
-        <button style="height: 35px; width: 60px; border:1px solid black;">Submit</button>
+        <input id="todoInput" type="text" style="height: 20px; width: 200px; padding:5px; margin: 20px;" />
+        <button onclick="saveTodo()" style="height: 35px; width: 60px; border:1px solid black;">Submit</button>
         
-        
+        <div id="showTodo">
+
+        </div>
     </div>
+
+
+
+    <script>
+        function saveTodo(){
+            const todo = document.getElementById("todoInput");
+
+            axios.post("http://localhost:3000/todos",
+                {
+                    todo:todo.value
+                }
+            )
+            todo.value = "";
+        }
+
+        async function getTodos(){
+            const response = await axios.get("http://localhost:3000/todos");
+            const todos = response.data
+            console.log(todos);
+            const showTodoDiv = document.getElementById("showTodo");
+            showTodoDiv.innerHTML = "";
+            todos.map(todo=>{
+                const div = document.createElement("div");
+                const span = document.createElement("span");
+                span.innerText = todo.todo
+                div.appendChild(span);
+                const btn = document.createElement("button");
+                btn.innerText = "delete"
+                div.appendChild(btn);
+                showTodoDiv.appendChild(div);
+
+                btn.onclick = ()=>deleteTodo(todo.todoId);
+            })            
+        }
+
+        async function deleteTodo(id){
+            try{
+                await axios.delete(`http://localhost:3000/todos/${id}`)
+                getTodos();
+            }
+            catch(err){
+                console.log("Error in deleting Todo " , err);
+            }
+        }
+
+        getTodos();
+    </script>
 </body>
 </html>

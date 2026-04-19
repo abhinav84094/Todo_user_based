@@ -8,7 +8,7 @@ let todoId = 1
 
 
 app.get("/", function home(req, res){
-    res.sendFile("A:\\FULL STACK Web Development MERN\\Project\\2026\\NotesApp\\frontend\\home.html");
+    res.sendFile("A:\\FULL STACK Web Development MERN\\Project\\2026\\Todo\\frontend\\home.html");
 })
 
 app.post("/todos", function(req, res){
