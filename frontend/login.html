@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <label>Enter User Name : </label>
+    <input id="username" type="text"  />
+    <br/>
+    <label>Enter Password : </label>
+    <input id="password" type="password"  />
+    <br/>
+    <button onclick="login()">Login</button>
+    <h4 onclick="window.location.href='signup.html'">SignUp</h4>
+    <div id="msg"></div>
+
+    <script>
+        async function login(){
+            const username = document.getElementById("username");
+            const password = document.getElementById("password");
+
+            try{
+                const res = await axios.post("http://localhost:3000/login",{
+                    username: username.value, password: password.value
+                })
+
+                console.log(res);
+                localStorage.setItem("token", res.data.token);
+
+                window.location.href = "home.html";
+            }
+            catch(err){
+                const div = document.getElementById("msg");
+                div.innerText = "User not found";
+                username.value = ""
+                password.value = ""
+            }
+        }
+    </script>
+</body>
+</html>

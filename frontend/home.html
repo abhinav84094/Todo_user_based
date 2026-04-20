@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 </head>
 <body>
     <div>
+        <div style="text-align: right;">
+            <button onclick="logout()">LogOut</button>
+        </div>
         <label>Enter Your Task : </label>
         <input id="todoInput" type="text" style="height: 20px; width: 200px; padding:5px; margin: 20px;" />
         <button onclick="saveTodo()" style="height: 35px; width: 60px; border:1px solid black;">Submit</button>
@@ -17,23 +20,42 @@
 
         </div>
     </div>
-
+    
 
 
     <script>
-        function saveTodo(){
+
+        const token = localStorage.getItem("token");
+
+        if(!token) {
+            window.location.href = "login.html";
+            console.log("Please login first");
+        }
+
+        async function saveTodo(){
             const todo = document.getElementById("todoInput");
 
-            axios.post("http://localhost:3000/todos",
+            await axios.post("http://localhost:3000/todos",
                 {
                     todo:todo.value
+                },
+                {
+                    headers:{
+                        Authorization : token
+                    }
                 }
             )
             todo.value = "";
+            getTodos();
         }
 
         async function getTodos(){
-            const response = await axios.get("http://localhost:3000/todos");
+            const response = await axios.get("http://localhost:3000/todos",
+                {
+                    headers:{
+                        Authorization : token
+                    }
+                });
             const todos = response.data
             console.log(todos);
             const showTodoDiv = document.getElementById("showTodo");
@@ -54,7 +76,12 @@
 
         async function deleteTodo(id){
             try{
-                await axios.delete(`http://localhost:3000/todos/${id}`)
+                await axios.delete(`http://localhost:3000/todos/${id}`,
+                {
+                    headers:{
+                        Authorization : token
+                    }
+                })
                 getTodos();
             }
             catch(err){
@@ -63,6 +90,13 @@
         }
 
         getTodos();
+
+
+
+        function logout(){
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+        }
     </script>
 </body>
 </html>

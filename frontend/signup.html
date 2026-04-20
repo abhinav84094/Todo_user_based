@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignUp Page</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <label>Enter User Name : </label>
+    <input id="username" type="text"  />
+    <br/>
+    <label>Enter Password : </label>
+    <input id="password" type="password"  />
+    <br/>
+    <button onclick="signup()">SignUp</button>
+    <h4 onclick="window.location.href='login.html'">Login</h4>
+
+    <script>
+        async function signup(){
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            if(!username || !password){
+                console.log("Please enter details");
+                return;
+            }
+
+            const res = await axios.post("http://localhost:3000/signup",{
+                username, password
+            })
+
+            window.location.href="login.html"
+
+            console.log(res.data)
+        }
+    </script>
+</body>
+</html>
