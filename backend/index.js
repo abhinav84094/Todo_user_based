@@ -2,6 +2,8 @@ import express from "express"
 import jwt from "jsonwebtoken"
 import auth from "./middleware/auth.js"
 import dotenv from "dotenv"
+import connectDB from "./dbConnection.js"
+import Users from "./model/userModel.js"
 
 // const token = jwt.sign()
 
@@ -13,39 +15,48 @@ dotenv.config()
 let todos = []
 let todoId = 1
 
-let users = []
-let userId = 1
+
 
 
 app.get("/", function home(req, res){
     res.sendFile("A:\\FULL STACK Web Development MERN\\Project\\2026\\Todo\\frontend\\login.html");
 })
 
-app.post("/login", function(req, res){
+app.post("/login", async function(req, res){
     const username = req.body.username;
     const password = req.body.password;
 
-    users.map(user=>{
-        if(user.username==username && user.password==password){
-
-            const token = jwt.sign(
-                { userId : user.userId },   // payload
-                process.env.SECRET_KEY,           // secret key
-                { expiresIn: "1h" }
-            );
-            res.status(200).json({
-                message:"Login Successful",
-                token
+    const user = await Users.findOne({username});
+    console.log(user);
+    if(user){
+        if(user.password != password){
+            res.status(400).json({
+                message:"Incorrect Password"
             })
+            return;
         }
-    })
 
-    res.status(400).json({
-        message:"User Not Found"
-    })
+        const token = jwt.sign(
+            { userId : user.userId},
+            process.env.SECRET_KEY,
+            { expiresIn : "24h" }
+        );
+
+        res.status(200).json({
+            message: "Login Successfully", 
+            token
+        })
+
+        return;
+    }
+    else{
+        res.status(400).json({
+            message:"User Not Found"
+        })
+    }
 })
 
-app.post("/signup", function(req, res){
+app.post("/signup", async function(req, res){
     const username = req.body.username;
     const password = req.body.password;
 
@@ -57,21 +68,15 @@ app.post("/signup", function(req, res){
         return;
     }
 
-    users.map(user=>{
-        if(user.username==username){
-            res.status(200).json({
-                message:"UserName Already Exists"
-            })
+    const existingUser = await Users.findOne({username});
+    if(existingUser) {
+        res.status(200).json({
+            message: "Username Already Exists"
+        })
+        return;
+    }
 
-            return;
-        }
-    })
-    
-
-
-    users.push({
-        userId : userId++, username, password
-    })
+    await Users.create({username, password});
 
     res.status(200).json({
         message: `${username} successfull signup`
@@ -112,4 +117,6 @@ app.delete("/todos/:id", auth,  function(req, res){
 })
 
 
-app.listen(3000)
+app.listen(3000, ()=>{
+    connectDB();
+})
