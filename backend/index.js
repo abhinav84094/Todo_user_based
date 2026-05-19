@@ -5,8 +5,8 @@ import dotenv from "dotenv"
 import connectDB from "./dbConnection.js"
 import Users from "./model/userModel.js"
 import Todos from "./model/todoSchema.js"
+import bcrypt from "bcrypt"
 
-// const token = jwt.sign()
 
 const app = express();
 app.use(express.json())
@@ -25,7 +25,9 @@ app.post("/login", async function(req, res){
     const user = await Users.findOne({username});
     console.log(user);
     if(user){
-        if(user.password != password){
+        const isValidUser = await bcrypt.compare(password, user.password)
+
+        if(!isValidUser){
             res.status(400).json({
                 message:"Incorrect Password"
             })
@@ -64,6 +66,7 @@ app.post("/signup", async function(req, res){
         return;
     }
 
+
     const existingUser = await Users.findOne({username});
     if(existingUser) {
         res.status(200).json({
@@ -72,7 +75,10 @@ app.post("/signup", async function(req, res){
         return;
     }
 
-    await Users.create({username, password});
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+
+    await Users.create({username, password : hashedPassword});
 
     res.status(200).json({
         message: `${username} successfull signup`
