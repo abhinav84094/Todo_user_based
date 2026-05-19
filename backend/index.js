@@ -4,6 +4,7 @@ import auth from "./middleware/auth.js"
 import dotenv from "dotenv"
 import connectDB from "./dbConnection.js"
 import Users from "./model/userModel.js"
+import Todos from "./model/todoSchema.js"
 
 // const token = jwt.sign()
 
@@ -11,11 +12,6 @@ const app = express();
 app.use(express.json())
 app.use(express.static("../frontend"))
 dotenv.config()
-
-let todos = []
-let todoId = 1
-
-
 
 
 app.get("/", function home(req, res){
@@ -37,7 +33,7 @@ app.post("/login", async function(req, res){
         }
 
         const token = jwt.sign(
-            { userId : user.userId},
+            { userId : user._id},
             process.env.SECRET_KEY,
             { expiresIn : "24h" }
         );
@@ -83,31 +79,38 @@ app.post("/signup", async function(req, res){
     })
 })
 
-app.post("/todos",auth,  function(req, res){
+app.post("/todos",auth, async function(req, res){
     let todo = req.body.todo; 
-    todos.push({
+    await Todos.create({
         todo,
-        todoId: todoId++,
-        userId:req.user.userId
+        userId : req.user.userId
     });
     res.status(200).json({
         messages: todo
     })
 })
 
-app.get("/todos",auth,  function(req, res){
+app.get("/todos",auth, async function(req, res){
     const uid = req.user.userId
-    const uidTodo = todos.filter(todo=> todo.userId==uid)
-
+    const uidTodo = await Todos.find({userId : uid});
+    console.log(uidTodo)
     res.send(uidTodo)
 })
 
-app.delete("/todos/:id", auth,  function(req, res){
+app.delete("/todos/:id", auth, async function(req, res){
     const id = req.params.id;
+    const userId = req.user._id;
 
-    todos = todos.filter(todo=> todo.todoId!=id)
-    console.log(todos)
-    
+    const todo = Todos.findOne({id});
+    if(todo.userId != userId) {
+        res.send(400).json({
+            message: "You are not authorized to delete this todo"
+        })
+        return;
+    }
+
+    await Todos.findByIdAndDelete(id);
+        
     res.status(202).json(
         {
             messages: `${id} deleted`

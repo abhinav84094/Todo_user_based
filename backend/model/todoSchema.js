@@ -1,13 +1,17 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 const todoSchema = new mongoose.Schema({
     todo:{
         type:String,
         required: true
+    },
+    userId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref : "Users"
     }
 })
 
 
-const Todo = mongoose.model("Todo", todoSchema)
+const Todos = mongoose.model("Todos", todoSchema)
 
-export default Todo;
+export default Todos;
